@@ -26,10 +26,17 @@ userRouter.post("/",async(req,res)=>{
 userRouter.post("/login", async(req,res)=>{
     const{email,pass}=req.body
     try{
-        if(result){
-            
+        const matchingUser = await userModel.findOne({email})
+        if(matchingUser){
+            const ispasswordMatch = await bcrypt.compare(pass,matchingUser.pass)
+            if(ispasswordMatch){
+                const token = jwt.sign({userId:matchingUser._id, user:matchingUser.name},process.env.SECRET_KEY)
+                res.json({msg: "login success"})
+            }else{
+                res.json({msg:"wrong password"})
+            }
         }else{
-            res.json({error})
+            res.json({msg: "user is not found"})
         }
     }catch(error){
         res.json({error})
